@@ -56,21 +56,25 @@ main p {
 
 main nav {
   display: flex;
-  gap: 1.25rem;
-  margin-top: 3.5rem;
+  gap: 5.5rem;
+  margin-top: 8rem;
 }
 
 .link-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
   color: inherit;
   text-decoration: none;
   position: relative;
 }
 
 .link-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.5rem;
   font-size: 0.75rem;
   font-weight: 300;
   opacity: 0.7;
@@ -83,6 +87,7 @@ main nav {
 
 .invisible-label {
   visibility: hidden;
+  pointer-events: none;
 }
 
 .copied-label {
@@ -90,7 +95,7 @@ main nav {
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  margin-top: 0.35rem;
+  margin-top: 1.75rem;
   font-size: 0.75rem;
   font-weight: 300;
   color: rgba(255, 255, 255, 0.7);
@@ -319,6 +324,12 @@ main nav {
   #surface p {
     color: rgba(255, 255, 255, 0.5);
     padding-left: 0 !important;
+  }
+
+  #surface-nav {
+    padding-left: 0 !important;
+    gap: 1.5rem;
+    margin-top: 3rem;
   }
 
   #surface .link-item {

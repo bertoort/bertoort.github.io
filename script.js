@@ -23,11 +23,16 @@
   // -------------------------------------------
   var roOffset = document.getElementById('ro-offset');
   var surfaceTitle = document.getElementById('surface-title');
+  var revealedNav = document.getElementById('revealed-nav');
+  var surfaceNav = document.getElementById('surface-nav');
 
   function syncLayout() {
     surfaceContent.style.minWidth = '';
     surfaceContent.style.minWidth = revealedContent.offsetWidth + 'px';
-    surfaceTitle.style.paddingLeft = roOffset.offsetWidth + 'px';
+    var roWidth = roOffset.offsetWidth + 'px';
+    surfaceTitle.style.paddingLeft = roWidth;
+    revealedNav.style.paddingLeft = roWidth;
+    surfaceNav.style.paddingLeft = roWidth;
   }
 
   syncLayout();
@@ -41,7 +46,7 @@
   const SCARED_DISTANCE = 80;
   const PUSH_FORCE = 0.6;
   const FRICTION = 0.97;
-  const GHOST_SIZE = 40;
+  const GHOST_SIZE = 64;
   const RESPAWN_DELAY = 8000;
   let ghostX, ghostY;
   let ghostVX = 0, ghostVY = 0;
@@ -75,6 +80,39 @@
     ghostY = padding;
     ghost.style.left = padding + 'px';
     ghost.style.top = padding + 'px';
+  }
+
+  var pupilL = document.getElementById('pupil-l');
+  var pupilR = document.getElementById('pupil-r');
+  var pupilSL = document.getElementById('pupil-scared-l');
+  var pupilSR = document.getElementById('pupil-scared-r');
+
+  var EYE_L_CX = 38, EYE_L_CY = 39;
+  var EYE_R_CX = 62, EYE_R_CY = 39;
+  var EYE_SCARED_L_CX = 38, EYE_SCARED_L_CY = 38;
+  var EYE_SCARED_R_CX = 62, EYE_SCARED_R_CY = 38;
+  var PUPIL_RANGE = 4;
+  var PUPIL_SCARED_RANGE = 5;
+
+  function updatePupils() {
+    var svgScale = 100 / GHOST_SIZE;
+    var cursorLocalX = (mouseX - ghostX) * svgScale;
+    var cursorLocalY = (mouseY - ghostY) * svgScale;
+
+    function aimPupil(el, originX, originY, range) {
+      var dx = cursorLocalX - originX;
+      var dy = cursorLocalY - originY;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist === 0) return;
+      var clamp = Math.min(range, dist) / dist;
+      el.setAttribute('cx', originX + dx * clamp);
+      el.setAttribute('cy', originY + dy * clamp);
+    }
+
+    aimPupil(pupilL, EYE_L_CX, EYE_L_CY, PUPIL_RANGE);
+    aimPupil(pupilR, EYE_R_CX, EYE_R_CY, PUPIL_RANGE);
+    aimPupil(pupilSL, EYE_SCARED_L_CX, EYE_SCARED_L_CY, PUPIL_SCARED_RANGE);
+    aimPupil(pupilSR, EYE_SCARED_R_CX, EYE_SCARED_R_CY, PUPIL_SCARED_RANGE);
   }
 
   function ghostTick() {
@@ -119,6 +157,7 @@
     ghost.style.left = ghostX + 'px';
     ghost.style.top = ghostY + 'px';
 
+    updatePupils();
     requestAnimationFrame(ghostTick);
   }
 
@@ -166,7 +205,7 @@
     }
   }
 
-  ghost.addEventListener('click', function () {
+  ghost.addEventListener('mousedown', function () {
     if (!ghostAlive) return;
     ghostAlive = false;
     var cx = ghostX + GHOST_SIZE / 2;
