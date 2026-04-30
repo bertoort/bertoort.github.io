@@ -1,0 +1,344 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --mouse-x: -9999px;
+  --mouse-y: -9999px;
+  --light-radius: 250px;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: #000;
+  color: #e8e8e8;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ------------------------------------------------
+   Shared layout for both content layers
+   ------------------------------------------------ */
+main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  user-select: none;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+main h1 {
+  font-size: 4rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+main p {
+  font-size: 1.15rem;
+  font-weight: 300;
+  margin-top: 0.5rem;
+}
+
+main nav {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 3.5rem;
+}
+
+.link-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+  position: relative;
+}
+
+.link-label {
+  font-size: 0.75rem;
+  font-weight: 300;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.hidden-text {
+  visibility: hidden;
+}
+
+.invisible-label {
+  visibility: hidden;
+}
+
+.copied-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  animation: copied-fade 1.5s ease-out forwards;
+}
+
+@keyframes copied-fade {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ------------------------------------------------
+   Warm glow (follows cursor, lowest layer)
+   ------------------------------------------------ */
+#glow {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle var(--light-radius) at var(--mouse-x) var(--mouse-y),
+    rgba(255, 240, 200, 0.08) 0%,
+    transparent 100%
+  );
+}
+
+/* ------------------------------------------------
+   Revealed layer (bright, under the fog)
+   ------------------------------------------------ */
+#revealed {
+  z-index: 10;
+  color: #fff;
+}
+
+#revealed p {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+#revealed .link-item {
+  color: rgba(255, 255, 255, 0.85);
+  transition: color 0.2s;
+}
+
+#revealed .link-item:hover {
+  color: #fff;
+}
+
+/* ------------------------------------------------
+   Ghost
+   ------------------------------------------------ */
+#ghost {
+  position: fixed;
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: ghost-float 3s ease-in-out infinite;
+  transition: opacity 0.3s;
+}
+
+#ghost.poofed {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.face-scared {
+  display: none;
+}
+
+#ghost.scared .face-calm {
+  display: none;
+}
+
+#ghost.scared .face-scared {
+  display: block;
+}
+
+@keyframes ghost-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Poof particles */
+.poof-particle {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  z-index: 10;
+  animation: poof-fly 0.6s ease-out forwards;
+}
+
+@keyframes poof-fly {
+  0% {
+    opacity: 1;
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0) translate(var(--poof-x), var(--poof-y));
+  }
+}
+
+/* ------------------------------------------------
+   Fog overlay
+   ------------------------------------------------ */
+#overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background: radial-gradient(
+    circle var(--light-radius) at var(--mouse-x) var(--mouse-y),
+    transparent 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.7) 75%,
+    #000 100%
+  );
+}
+
+/* ------------------------------------------------
+   Fog grain texture
+   ------------------------------------------------ */
+#fog-texture {
+  position: fixed;
+  inset: 0;
+  z-index: 51;
+  pointer-events: none;
+  opacity: 0.25;
+  overflow: hidden;
+  -webkit-mask-image: radial-gradient(
+    circle var(--light-radius) at var(--mouse-x) var(--mouse-y),
+    transparent 0%,
+    transparent 40%,
+    black 80%,
+    black 100%
+  );
+  mask-image: radial-gradient(
+    circle var(--light-radius) at var(--mouse-x) var(--mouse-y),
+    transparent 0%,
+    transparent 40%,
+    black 80%,
+    black 100%
+  );
+}
+
+#fog-texture::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  filter: url(#noise);
+  animation: fog-drift 25s ease-in-out infinite;
+}
+
+@keyframes fog-drift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-1.5%, -0.5%); }
+  50% { transform: translate(-0.5%, -1.5%); }
+  75% { transform: translate(1%, -0.5%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ------------------------------------------------
+   Surface layer (faint, above the fog)
+   Masked to disappear where the light shines
+   ------------------------------------------------ */
+#surface {
+  z-index: 60;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.35);
+  -webkit-mask-image: radial-gradient(
+    circle var(--light-radius) at var(--mouse-x) var(--mouse-y),
+    transparent 0%,
+    transparent 30%,
+    black 70%,
+    black 100%
+  );
+  mask-image: radial-gradient(
+    circle var(--light-radius) at var(--mouse-x) var(--mouse-y),
+    transparent 0%,
+    transparent 30%,
+    black 70%,
+    black 100%
+  );
+}
+
+#surface p {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+#surface .link-item {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ------------------------------------------------
+   Mobile fallback
+   ------------------------------------------------ */
+@media (hover: none) and (pointer: coarse) {
+  #overlay,
+  #glow,
+  #fog-texture,
+  #revealed {
+    display: none;
+  }
+
+  #surface {
+    pointer-events: auto;
+    color: rgba(255, 255, 255, 0.85);
+    -webkit-mask-image: none;
+    mask-image: none;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-top: 35vh;
+  }
+
+  #surface .content {
+    align-items: flex-start;
+    padding-left: 2rem;
+  }
+
+  #surface p {
+    color: rgba(255, 255, 255, 0.5);
+    padding-left: 0 !important;
+  }
+
+  #surface .link-item {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  #surface .hidden-text {
+    display: none;
+  }
+
+  #surface .invisible-label {
+    display: none;
+  }
+
+  #surface h1 {
+    font-size: 3rem;
+  }
+
+  #ghost {
+    opacity: 0.4;
+    z-index: 70;
+  }
+}
